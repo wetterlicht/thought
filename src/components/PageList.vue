@@ -1,13 +1,12 @@
 <template>
     <ul class="w-full flex flex-col gap-y-px">
-        <PageListElement v-for="page in pages" :key="page.id" :workspaceId="workspaceId" :page="page" :depth="depth"
-            @createPageInPage="$emit('createPageInPage', $event)">
+        <PageListElement v-for="page in pages" :key="page.id" :workspaceId="workspaceId" :page="page" :depth="depth">
         </PageListElement>
     </ul>
 </template>
 
 <script setup lang="ts">
-import type { PageDocumentWithId } from '@/types';
+import type { AssembledPage } from '@/types';
 import PageListElement from './PageListElement.vue';
 
 const props = defineProps({
@@ -16,7 +15,7 @@ const props = defineProps({
         required: true
     },
     pages: {
-        type: Array<PageDocumentWithId>,
+        type: Array<AssembledPage>,
         required: true
     },
     depth: {
