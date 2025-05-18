@@ -9,18 +9,24 @@
                     <div class="truncate flex-grow">{{ page.title }}</div>
                 </div>
             </RouterLink>
-            <button @click.stop="createPageInPage(page.id)"
-                class="absolute right-1 top-1 text-stone-600 
-                    opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
-                <DocumentPlusIcon class="size-5"></DocumentPlusIcon>
-            </button>
             <button v-if="page.children.length" @click="showChildren = !showChildren"
-                class="absolute right-8 top-1 h-7 w-7 flex items-center justify-center text-stone-600 
+                class="absolute right-15 top-1 h-7 w-7 flex items-center justify-center text-stone-600 
                     opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
                 <ChevronRightIcon class="size-4" :class="{
                     'rotate-90': showChildren
                 }"></ChevronRightIcon>
             </button>
+            <button @click.stop=""
+                class="absolute right-8 top-1 text-stone-600 
+                    opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
+                <EllipsisHorizontalIcon class="size-5"></EllipsisHorizontalIcon>
+            </button>
+            <button @click.stop="createPageInPage(page.id)"
+                class="absolute right-1 top-1 text-stone-600 
+                    opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
+                <DocumentPlusIcon class="size-5"></DocumentPlusIcon>
+            </button>
+
         </div>
         <PageList class="my-px" v-if="page.children && showChildren" :workspaceId="workspaceId" :pages="page.children"
             :depth="depth + 1">
@@ -29,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { DocumentTextIcon, DocumentPlusIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
+import { DocumentTextIcon, DocumentPlusIcon, ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/vue/24/outline";
 import { useRepo } from '@/composables/useRepo';
 import { ref, type PropType } from "vue";
 import PageList from './PageList.vue';

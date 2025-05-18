@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen" v-if="currentWorkspace">
-        <nav class="w-80 bg-stone-100 border-r border-stone-200 p-4">
+        <nav class="w-92 bg-stone-100 border-r border-stone-200 p-4">
             <div class="text-sm text-stone-600 mb-px">Workspace</div>
             <div class="mb-4">{{ currentWorkspace.name }}</div>
             <div class="text-sm text-stone-600 mb-2">Pages</div>
