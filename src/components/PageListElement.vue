@@ -21,7 +21,7 @@
                     opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
                 <EllipsisHorizontalIcon class="size-5"></EllipsisHorizontalIcon>
             </button>
-            <button @click.stop="createPageInPage(page.id)"
+            <button @click.stop="onCreatePageInPage"
                 class="absolute right-1 top-1 text-stone-600 
                     opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
                 <DocumentPlusIcon class="size-5"></DocumentPlusIcon>
@@ -44,7 +44,8 @@ import PageList from './PageList.vue';
 import type { AssembledPage } from "@/types";
 import PageListMenu from "./PageListMenu.vue";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-const { createPageInPage, deletePage } = useRepo();
+import router from "@/router";
+const { createPageInPage, deletePage, currentPageId } = useRepo();
 
 const props = defineProps({
     workspaceId: {
@@ -75,6 +76,11 @@ const onDelete = (id: AutomergeUrl) => {
         menu.value.close();
     }
     deletePage(id);
+}
+
+const onCreatePageInPage = () => {
+    const id = createPageInPage(props.page.id);
+    router.push(`/workspaces/${props.workspaceId}/pages/${id}`);
 }
 
 </script>
