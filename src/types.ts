@@ -18,7 +18,7 @@ export interface Workspace {
 }
 
 export interface WorkspaceWithPages extends Omit<Workspace, 'pageIds'> {
-    pages: PageDocumentWithId[],
+    pages: AssembledPage[],
 }
 
 export interface PageDocument {
@@ -31,9 +31,16 @@ export interface PageDocument {
     childIds: AutomergeUrl[]
 }
 
-export interface PageDocumentWithId extends PageDocument {
+export interface PageDocumentWithParent extends PageDocument {
+    parentPageId: AutomergeUrl | null,
+    parentWorkspaceId: string | null,
+}
+
+export interface AssembledPage extends PageDocumentWithParent {
     id: AutomergeUrl,
-    children: PageDocumentWithId[]
+    parentWorkspaceId: string | null,
+    parentPageId: AutomergeUrl | null,
+    children: AssembledPage[]
 }
 
 export interface BlockList {

@@ -16,7 +16,7 @@
                     'rotate-90': showChildren
                 }"></ChevronRightIcon>
             </button>
-            <button @click.stop=""
+            <button @click.stop="showMenu"
                 class="absolute right-8 top-1 text-stone-600 
                     opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
                 <EllipsisHorizontalIcon class="size-5"></EllipsisHorizontalIcon>
@@ -26,7 +26,9 @@
                     opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-black hover:bg-stone-300 rounded-md p-1">
                 <DocumentPlusIcon class="size-5"></DocumentPlusIcon>
             </button>
-
+            <dialog ref="menu" class="m-auto shadow bg-transparent">
+                <PageListMenu @delete="onDelete(page.id)"></PageListMenu>
+            </dialog>
         </div>
         <PageList class="my-px" v-if="page.children && showChildren" :workspaceId="workspaceId" :pages="page.children"
             :depth="depth + 1">
@@ -39,8 +41,10 @@ import { DocumentTextIcon, DocumentPlusIcon, ChevronRightIcon, EllipsisHorizonta
 import { useRepo } from '@/composables/useRepo';
 import { ref, type PropType } from "vue";
 import PageList from './PageList.vue';
-import type { PageDocumentWithId } from "@/types";
-const { createPageInPage } = useRepo();
+import type { AssembledPage } from "@/types";
+import PageListMenu from "./PageListMenu.vue";
+import type { AutomergeUrl } from "@automerge/automerge-repo";
+const { createPageInPage, deletePage } = useRepo();
 
 const props = defineProps({
     workspaceId: {
@@ -48,7 +52,7 @@ const props = defineProps({
         required: true
     },
     page: {
-        type: Object as PropType<PageDocumentWithId>,
+        type: Object as PropType<AssembledPage>,
         required: true
     },
     depth: {
@@ -57,7 +61,21 @@ const props = defineProps({
     }
 })
 
+const menu = ref<HTMLDialogElement | null>(null);
 const showChildren = ref(false);
+
+const showMenu = () => {
+    if (menu.value) {
+        menu.value.showModal();
+    }
+}
+
+const onDelete = (id: AutomergeUrl) => {
+    if (menu.value) {
+        menu.value.close();
+    }
+    deletePage(id);
+}
 
 </script>
 

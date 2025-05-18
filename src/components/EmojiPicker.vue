@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="bg-white rounded-md border border-stone-300 shadow-md w-fit pb-4">
+        <div class="bg-white rounded-md border border-stone-300 w-fit pb-4">
             <div class="px-3 mb-4 border-b border-stone-300 pt-4 pb-3 flex gap-x-4 items-center">
                 <form class="flex-grow">
                     <input v-model="query" type="text" id="emoji-picker-search"

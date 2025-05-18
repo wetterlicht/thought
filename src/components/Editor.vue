@@ -16,7 +16,8 @@
                         <PhotoIcon class="size-5"></PhotoIcon>Add cover
                     </button>
                 </div>
-                <dialog ref="emojiPickerDialog" class="m-auto bg-transparent" v-on-click-outside="hideEmojiPicker">
+                <dialog ref="emojiPickerDialog" class="m-auto bg-transparent shadow"
+                    v-on-click-outside="hideEmojiPicker">
                     <EmojiPicker @select="(emoji: string) => { setPageIcon(emoji); hideEmojiPicker() }"
                         @remove="() => { setPageIcon(''); hideEmojiPicker() }" @close="hideEmojiPicker" />
                 </dialog>

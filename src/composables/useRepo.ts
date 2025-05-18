@@ -10,7 +10,7 @@ import { computed, markRaw, ref, type ComputedRef, type Ref, watchEffect } from 
 import TextBlock from "@/components/TextBlock.vue";
 import HeadingBlock from "@/components/HeadingBlock.vue";
 import ImageBlock from "@/components/ImageBlock.vue";
-import type { AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithId, RootDocument, WorkspaceWithPages } from "@/types";
+import type { AssembledPage, AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithParent, RootDocument, WorkspaceWithPages } from "@/types";
 
 const repo = new Repo({
     network: [
@@ -24,7 +24,7 @@ const rootDocument: Ref<RootDocument | undefined> = ref();
 const currentWorkspaceId: Ref<string | undefined> = ref();
 const currentPageId: Ref<AutomergeUrl | undefined> = ref();
 const pageHandles: Map<AutomergeUrl, DocHandle<PageDocument>> = new Map<AutomergeUrl, DocHandle<PageDocument>>();
-const pages: Ref<Map<AutomergeUrl, PageDocument>> = ref(new Map<AutomergeUrl, PageDocument>());
+const pages: Ref<Map<AutomergeUrl, PageDocumentWithParent>> = ref(new Map<AutomergeUrl, PageDocumentWithParent>());
 
 const getRootDocumentURL = () => {
     return localStorage.getItem("RootDocumentURL");
@@ -88,23 +88,31 @@ const setCurrentWorkspace = (id: string) => {
 watchEffect(async () => {
     const currentWorkspace = rootDocument.value?.workspaces.find(workspace => workspace.id === currentWorkspaceId.value);
     if (currentWorkspace) {
-        await loadPages(currentWorkspace.pageIds);
+        await loadPages(currentWorkspace.pageIds, currentWorkspace.id, null);
     }
 })
 
-const loadPages = async (ids: AutomergeUrl[]) => {
+const loadPages = async (ids: AutomergeUrl[], parentWorkspaceId: string | null, parentPageId: AutomergeUrl | null) => {
     for (const id of ids) {
         if (pages.value.has(id)) {
             continue;
         }
         const pageHandle = await repo.find<PageDocument>(id);
         pageHandles.set(id, pageHandle);
-        pages.value.set(id, (pageHandle.doc()));
+        pages.value.set(id, ({
+            ...pageHandle.doc(),
+            parentWorkspaceId,
+            parentPageId,
+        }));
         pageHandle.on('change', (newDoc) => {
-            pages.value.set(id, (newDoc.doc));
-            loadPages(pageHandle.doc().childIds);
+            pages.value.set(id, ({
+                ...newDoc.doc,
+                parentWorkspaceId,
+                parentPageId,
+            }));
+            loadPages(pageHandle.doc().childIds, null, id);
         })
-        loadPages(pageHandle.doc().childIds);
+        loadPages(pageHandle.doc().childIds, null, id);
     }
 }
 
@@ -115,17 +123,17 @@ const currentWorkspace: ComputedRef<WorkspaceWithPages | null> = computed(() => 
     }
     return {
         ...workspace,
-        pages: workspace!.pageIds.map(id => getPageById(id)).filter((page): page is PageDocumentWithId => page !== null),
+        pages: workspace!.pageIds.map(id => getPageById(id)).filter((page): page is AssembledPage => page !== null),
     }
 })
 
-const getPageById = (id: AutomergeUrl): PageDocumentWithId | null => {
+const getPageById = (id: AutomergeUrl): AssembledPage | null => {
     const page = pages.value.get(id);
     if (!page) {
         return null;
     }
     const children = page.childIds.map(childId =>
-        getPageById(childId)).filter((child): child is PageDocumentWithId => child !== null);
+        getPageById(childId)).filter((child): child is AssembledPage => child !== null);
     return {
         ...page,
         id,
@@ -177,6 +185,40 @@ const createEmptyPage = (): DocHandle<PageDocument> => {
 
     })
     return pageHandle;
+}
+
+const deletePage = (pageId: AutomergeUrl) => {
+    const page = getPageById(pageId);
+    if (!page) {
+        throw new Error(`Page with id ${pageId} not found in deletePage`);
+    }
+    for (const childId of page.childIds) {
+        deletePage(childId);
+    }
+    if (page.parentPageId) {
+        const parentPageHandle = pageHandles.get(page.parentPageId);
+        if (!parentPageHandle) {
+            throw new Error("parentPageHandle not set in deletePage");
+        }
+        parentPageHandle.change(doc => {
+            const pageIndex = doc.childIds.findIndex(childId => childId === pageId);
+            doc.childIds.splice(pageIndex, 1);
+        })
+        repo.delete(pageId);
+    }
+    else if (page.parentWorkspaceId) {
+        if (!rootDocumentHandle) {
+            throw new Error("rootDocumentHandle not set in deletePage");
+        }
+        rootDocumentHandle.change(doc => {
+            const workspaceIndex = doc.workspaces.findIndex(workspace => workspace.id === page.parentWorkspaceId);
+            if (workspaceIndex !== -1) {
+                const pageIndex = doc.workspaces[workspaceIndex].pageIds.findIndex(id => id === pageId);
+                doc.workspaces[workspaceIndex].pageIds.splice(pageIndex, 1);
+            }
+        });
+        repo.delete(pageId);
+    }
 }
 
 const setCurrentPage = (id: string) => {
@@ -383,6 +425,7 @@ export function useRepo() {
         setCurrentPage,
         createPageInWorkspace,
         createPageInPage,
+        deletePage,
         blocksByListId,
         blockById,
         updateBlockData,
