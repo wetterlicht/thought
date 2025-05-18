@@ -1,27 +1,27 @@
 <template>
     <div class="flex h-screen" v-if="currentWorkspace">
-        <nav class="w-62 bg-stone-100 border-r border-stone-200 p-4">
-            <ul v-if="currentWorkspace" class="w-full flex flex-col gap-y-px">
-                <li v-for="page in currentWorkspace.pages" :key="page.id" class="w-full">
-                    <router-link :to="`/workspaces/${workspaceId}/pages/${page.id}`"
-                        class="cursor-default text-sm text-stone-700 hover:text-black hover:bg-stone-200 block rounded-lg px-2 py-1">
-                        <div class="flex items-center gap-1 ">
-                            <div v-if="page.icon">{{ page.icon }}</div>
-                            <DocumentTextIcon class="size-5 shrink-0" v-else></DocumentTextIcon>
-                            <div class="truncate">{{ page.title }}</div>
-                        </div>
-                    </router-link>
-
-                </li>
-            </ul>
+        <nav class="w-80 bg-stone-100 border-r border-stone-200 p-4">
+            <div class="text-sm text-stone-600 mb-px">Workspace</div>
+            <div class="mb-4">{{ currentWorkspace.name }}</div>
+            <div class="text-sm text-stone-600 mb-2">Pages</div>
+            <button @click="addNewPage"
+                class="w-full text-stone-600 flex items-center gap-1 mb-2 hover:text-black hover:bg-stone-200 rounded-lg px-2 py-1">
+                <DocumentPlusIcon class=" size-5"></DocumentPlusIcon>
+                <div>Add New Page</div>
+            </button>
+            <PageList v-if="currentWorkspace" :workspaceId="currentWorkspace.id" :pages="currentWorkspace.pages"
+                class="w-full flex flex-col gap-y-px">
+            </PageList>
         </nav>
         <RouterView></RouterView>
     </div>
 </template>
 
 <script setup lang="ts">
-import { DocumentTextIcon } from "@heroicons/vue/24/outline";
 import { useRepo } from '@/composables/useRepo';
+import { DocumentPlusIcon } from "@heroicons/vue/24/outline";
+import router from "@/router";
+import PageList from "@/components/PageList.vue";
 
 const props = defineProps({
     workspaceId: {
@@ -30,15 +30,16 @@ const props = defineProps({
     }
 })
 
-const { setCurrentWorkspace, currentWorkspace } = useRepo();
+const { setCurrentWorkspace, currentWorkspace, createPageInWorkspace } = useRepo();
 setCurrentWorkspace(props.workspaceId);
 
+const addNewPage = () => {
+    if (currentWorkspace.value) {
+        const newPageId = createPageInWorkspace(currentWorkspace.value.id);
+        router.push(`/workspaces/${props.workspaceId}/pages/${newPageId}`);
+    }
+}
 
 </script>
 
-<style scoped>
-.router-link-active {
-    color: var(--color-black);
-    background-color: var(--color-stone-200);
-}
-</style>
+<style scoped></style>

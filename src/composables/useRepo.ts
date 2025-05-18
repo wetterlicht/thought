@@ -10,7 +10,7 @@ import { computed, markRaw, ref, type ComputedRef, type Ref, watchEffect } from 
 import TextBlock from "@/components/TextBlock.vue";
 import HeadingBlock from "@/components/HeadingBlock.vue";
 import ImageBlock from "@/components/ImageBlock.vue";
-import type { AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, RootDocument, WorkspaceWithPages } from "@/types";
+import type { AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithId, RootDocument, WorkspaceWithPages } from "@/types";
 
 const repo = new Repo({
     network: [
@@ -102,7 +102,9 @@ const loadPages = async (ids: AutomergeUrl[]) => {
         pages.value.set(id, (pageHandle.doc()));
         pageHandle.on('change', (newDoc) => {
             pages.value.set(id, (newDoc.doc));
+            loadPages(pageHandle.doc().childIds);
         })
+        loadPages(pageHandle.doc().childIds);
     }
 }
 
@@ -113,21 +115,49 @@ const currentWorkspace: ComputedRef<WorkspaceWithPages | null> = computed(() => 
     }
     return {
         ...workspace,
-        pages: workspace!.pageIds.map(id => {
-            const page = pages.value.get(id)!;
-            return {
-                ...page,
-                id
-            }
-        })
+        pages: workspace!.pageIds.map(id => getPageById(id)).filter((page): page is PageDocumentWithId => page !== null),
     }
 })
+
+const getPageById = (id: AutomergeUrl): PageDocumentWithId | null => {
+    const page = pages.value.get(id);
+    if (!page) {
+        return null;
+    }
+    const children = page.childIds.map(childId =>
+        getPageById(childId)).filter((child): child is PageDocumentWithId => child !== null);
+    return {
+        ...page,
+        id,
+        children,
+    }
+}
 
 const createPageInWorkspace = (workspaceId: string): AutomergeUrl => {
     if (!rootDocumentHandle) {
         throw new Error("rootDocumentHandle not set in createPageInWorkspace");
     }
+    const pageHandle = createEmptyPage();
+    rootDocumentHandle.change(doc => {
+        const workspaceIndex = doc.workspaces.findIndex(workspace => workspace.id === workspaceId);
+        doc.workspaces[workspaceIndex].pageIds.push(pageHandle.url)
+    })
+    return pageHandle.url;
+}
 
+const createPageInPage = (pageId: AutomergeUrl): AutomergeUrl => {
+    const parentPageHandle = pageHandles.get(pageId);
+    if (!parentPageHandle) {
+        throw new Error("parentPageHandle not set in createPageInPage");
+    }
+    const pageHandle = createEmptyPage();
+    parentPageHandle.change(doc => {
+        doc.childIds.push(pageHandle.url)
+    })
+    return pageHandle.url;
+}
+
+const createEmptyPage = (): DocHandle<PageDocument> => {
     const block = createBlock("Text");
     const blocks: Record<string, Block> = {};
     blocks[block.id] = block;
@@ -139,20 +169,14 @@ const createPageInWorkspace = (workspaceId: string): AutomergeUrl => {
     const blockLists: Record<string, BlockList> = {};
     blockLists[blockListId] = blockList;
     const pageHandle = repo.create<PageDocument>({
-        title: '',
+        title: 'New Page',
         blockListId,
-        pageIds: [],
-
+        childIds: [],
         blockLists,
         blocks,
-    })
 
-    rootDocumentHandle.change(doc => {
-        const workspaceIndex = doc.workspaces.findIndex(workspace => workspace.id === workspaceId);
-        doc.workspaces[workspaceIndex].pageIds.push(pageHandle.url)
     })
-
-    return pageHandle.url;
+    return pageHandle;
 }
 
 const setCurrentPage = (id: string) => {
@@ -358,6 +382,7 @@ export function useRepo() {
         currentPage,
         setCurrentPage,
         createPageInWorkspace,
+        createPageInPage,
         blocksByListId,
         blockById,
         updateBlockData,

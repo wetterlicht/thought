@@ -24,15 +24,16 @@ export interface WorkspaceWithPages extends Omit<Workspace, 'pageIds'> {
 export interface PageDocument {
     title: string,
     blockListId: string,
-    pageIds: AutomergeUrl[]
     coverImageId?: AutomergeUrl,
     blockLists: Record<string, BlockList>
     blocks: Record<string, Block>
     icon?: string,
+    childIds: AutomergeUrl[]
 }
 
 export interface PageDocumentWithId extends PageDocument {
-    id: AutomergeUrl
+    id: AutomergeUrl,
+    children: PageDocumentWithId[]
 }
 
 export interface BlockList {
