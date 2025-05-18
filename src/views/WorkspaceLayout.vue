@@ -4,7 +4,7 @@
             <ul v-if="currentWorkspace" class="w-full flex flex-col gap-y-px">
                 <li v-for="page in currentWorkspace.pages" :key="page.id" class="w-full">
                     <router-link :to="`/workspaces/${workspaceId}/pages/${page.id}`"
-                        class=" text-sm text-stone-700 hover:text-black hover:bg-stone-200 block rounded-lg px-2 py-1">
+                        class="cursor-default text-sm text-stone-700 hover:text-black hover:bg-stone-200 block rounded-lg px-2 py-1">
                         <div class="flex items-center gap-1 ">
                             <div v-if="page.icon">{{ page.icon }}</div>
                             <DocumentTextIcon class="size-5 shrink-0" v-else></DocumentTextIcon>
