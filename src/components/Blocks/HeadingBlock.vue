@@ -1,5 +1,5 @@
 <template>
-    <component :is="tag" spellcheck="true" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
+    <component :is="tag" spellcheck="false" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
         :contenteditable="true" @input="onInput" @blur="onBlur" @keydown="onKeydown">{{ data.text }}
     </component>
 </template>

@@ -1,5 +1,5 @@
 <template>
-    <p spellcheck="true" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
+    <p spellcheck="false" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
         :contenteditable="true" @input="onInput" @blur="onBlur" @keydown="onKeydown" class="leading-6">
         <InlineSegment v-for="segment in content" :segment="segment"></InlineSegment>
     </p>

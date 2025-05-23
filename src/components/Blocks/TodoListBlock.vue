@@ -1,7 +1,7 @@
 <template>
     <li class="flex gap-x-2">
         <input type="checkbox" :id="checkboxId" :checked="data.checked" @change="onCheckboxChange" />
-        <div spellcheck="true" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
+        <div spellcheck="false" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
             :contenteditable="true" @input="onInput" @blur="onBlur" @keydown="onKeydown" class="leading-6">{{
                 content }}</div>
     </li>

@@ -1,6 +1,6 @@
 <template>
     <li class="flex">
-        <div spellcheck="true" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
+        <div spellcheck="false" ref="editable" placeholder="Write, or press ‘/’ to add a block &hellip;"
             :contenteditable="true" @input="onInput" @blur="onBlur" @keydown="onKeydown" class="leading-6">{{
                 content }}</div>
     </li>
