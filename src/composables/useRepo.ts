@@ -7,9 +7,9 @@ import {
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import { computed, markRaw, ref, type ComputedRef, type Ref, watchEffect } from "vue";
-import TextBlock from "@/components/TextBlock.vue";
-import HeadingBlock from "@/components/HeadingBlock.vue";
-import ImageBlock from "@/components/ImageBlock.vue";
+import TextBlock from "@/components/Blocks/TextBlock.vue";
+import HeadingBlock from "@/components/Blocks/HeadingBlock.vue";
+import ImageBlock from "@/components/Blocks/ImageBlock.vue";
 import type { AssembledPage, AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithParent, RootDocument, WorkspaceWithPages } from "@/types";
 
 const repo = new Repo({
