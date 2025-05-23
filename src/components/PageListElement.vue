@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { DocumentTextIcon, DocumentPlusIcon, ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/vue/24/outline";
 import { useRepo } from '@/composables/useRepo';
-import { ref, type PropType } from "vue";
+import { ref, watchEffect, type PropType } from "vue";
 import PageList from './PageList.vue';
 import type { AssembledPage } from "@/types";
 import PageListMenu from "./PageListMenu.vue";
@@ -63,7 +63,27 @@ const props = defineProps({
 })
 
 const menu = ref<HTMLDialogElement | null>(null);
+
+const containsCurrentPage = (page: AssembledPage) => {
+    for (const child of page.children) {
+        if (child.id === currentPageId.value) {
+            return true;
+        }
+        if (containsCurrentPage(child)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 const showChildren = ref(false);
+
+watchEffect(() => {
+    if (containsCurrentPage(props.page)) {
+        showChildren.value = true;
+    }
+});
+
 
 const showMenu = () => {
     if (menu.value) {

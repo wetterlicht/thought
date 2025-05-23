@@ -1,6 +1,6 @@
 <template>
   <main class="p-4 flex-grow mx-4">
-    <Editor v-if="currentPage" :key="pageId"></Editor>
+    <Editor v-if="currentPage" :key="currentPageId"></Editor>
   </main>
 </template>
 
@@ -8,7 +8,7 @@
 import Editor from "@/components/Editor.vue";
 import { useRepo } from "../composables/useRepo.ts"
 import { onMounted, watch } from "vue";
-const { setCurrentPage, currentPage } = useRepo();
+const { setCurrentPage, currentPage, currentPageId } = useRepo();
 
 const props = defineProps({
   pageId: {

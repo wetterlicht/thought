@@ -422,6 +422,7 @@ export function useRepo() {
         getDefaultWorkspaceId,
         setCurrentWorkspace,
         currentPage,
+        currentPageId,
         setCurrentPage,
         createPageInWorkspace,
         createPageInPage,
