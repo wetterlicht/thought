@@ -11,6 +11,8 @@ import TextBlock from "@/components/Blocks/TextBlock.vue";
 import HeadingBlock from "@/components/Blocks/HeadingBlock.vue";
 import ImageBlock from "@/components/Blocks/ImageBlock.vue";
 import type { AssembledPage, AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithParent, RootDocument, WorkspaceWithPages } from "@/types";
+import NumberedListBlock from "@/components/Blocks/NumberedListBlock.vue";
+import TodoListBlock from "@/components/Blocks/TodoListBlock.vue";
 
 const repo = new Repo({
     network: [
@@ -252,11 +254,17 @@ const getComponent = (type: string) => {
         case 'Heading 3':
             component = HeadingBlock;
             break;
+        case 'Numbered list':
+            component = NumberedListBlock;
+            break;
+        case 'Todo list':
+            component = TodoListBlock;
+            break;
         case 'Image':
             component = ImageBlock;
             break;
         default:
-            throw new Error("Unknown block name: " + name);
+            throw new Error("Unknown block type: " + type);
     }
 
     return markRaw(component);
@@ -343,12 +351,15 @@ const deleteBlockAtIndex = (blockListId: string, index: number) => {
 }
 
 const replaceBlockAtIndex = (blockListId: string, type: string, index: number) => {
+    const newBlock = createBlock(type);
     getCurrentPageHandle().change((doc => {
+        const existingBlockId = doc.blockLists[blockListId].blockIds[index];
+        delete doc.blocks[existingBlockId];
+        doc.blocks[newBlock.id] = newBlock;
         const blockList: BlockList = doc.blockLists[blockListId];
-        const id = blockList.blockIds[index];
-        const block = createBlock(type, id);
-        doc.blocks[id] = block;
+        blockList.blockIds.splice(index, 1, newBlock.id);
     }));
+    return newBlock.id
 }
 
 const createBlock = (type: string, existingId?: string): Block => {
@@ -377,6 +388,17 @@ const createBlock = (type: string, existingId?: string): Block => {
             data = {
                 content: [],
                 level: 3
+            }
+            break;
+        case 'Numbered list':
+            data = {
+                content: "",
+            }
+            break;
+        case 'Todo list':
+            data = {
+                content: "",
+                checked: false
             }
             break;
         case 'Image':

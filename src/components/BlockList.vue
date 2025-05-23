@@ -1,18 +1,20 @@
 <template>
     <div class="blocks">
-        <div class="px-[3px] py-[2px]" v-for="(block, index) in blocks" :key="block.id">
-            <component :id="block.id" :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component"
-                :data="block.data" @blockSelected="(name: string) => onBlockSelected(name, index)"
-                @newBlock="() => onNewBlock(index)" @focusPrevious="onFocusPrevious" @focusNext="onFocusNext"
-                @deleteBlock="() => onDeleteBlock(index)">
+        <component v-for="(group, groupIndex) in blockGroups" :key="groupIndex"
+            :is="getWrapperComponent(group[0].type)">
+            <component v-for="block in group" :key="block.id" :id="block.id" class="px-[3px] py-[2px]"
+                :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :data="block.data"
+                @blockSelected="(name: string) => onBlockSelected(name, getBlockListIndex(block.id))"
+                @newBlock="() => onNewBlock(getBlockListIndex(block.id))" @focusPrevious="onFocusPrevious"
+                @focusNext="onFocusNext" @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
             </component>
-        </div>
+        </component>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useRepo } from '@/composables/useRepo';
-import type { FocusableBlock } from '@/types';
+import type { BlockWithComponent, FocusableBlock } from '@/types';
 import { computed, nextTick, ref, type Ref } from 'vue';
 
 const props = defineProps({
@@ -26,12 +28,55 @@ const { deleteBlockAtIndex, insertBlockAtIndex, replaceBlockAtIndex, blocksByLis
 const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
 
+const blockGroups = computed(() => {
+    const groups = [];
+    let currentGroup: BlockWithComponent[] = [];
+    blocks.value.forEach((block, i) => {
+        if (
+            currentGroup.length === 0 ||
+            currentGroup[0].type === block.type
+        ) {
+            currentGroup.push(block);
+        } else {
+            groups.push(currentGroup);
+            currentGroup = [block];
+        }
+    });
+    if (currentGroup.length) {
+        groups.push(currentGroup);
+    }
+    return groups;
+});
+
+const getBlockListIndex = (id: string) => {
+    return blocks.value.findIndex(b => b.id === id);
+}
+
+const getWrapperComponent = (type: string) => {
+    switch (type) {
+        case "Numbered list":
+            return "ol";
+        case "Bulleted list":
+        case "Todo list":
+            return "ul";
+        default:
+            return "div";
+    }
+}
+
 const onBlockSelected = (type: string, index: number) => {
-    replaceBlockAtIndex(props.blockListId, type, index);
+    const id = replaceBlockAtIndex(props.blockListId, type, index);
+    nextTick(() => {
+        focusBlock(id, false)
+    })
 }
 
 const onNewBlock = (beforeIndex: number) => {
-    insertBlock("Text", beforeIndex);
+    const beforeBlock = blocks.value[beforeIndex];
+    const type = ['Numbered list', 'Bulleted list', 'Todo list'].includes(beforeBlock.type)
+        ? beforeBlock.type
+        : "Text";
+    insertBlock(type, beforeIndex);
 }
 
 const insertBlock = (type: string, beforeIndex: number) => {

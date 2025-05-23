@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+ol {
+    counter-reset: item-counter;
+}
+
+ol>li {
+    counter-increment: item-counter;
+}
+
+ol>li::before {
+    content: counter(item-counter)".";
+    margin-right: 0.5rem;
+}
