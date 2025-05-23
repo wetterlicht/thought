@@ -94,7 +94,8 @@ const onKeydown = (event: KeyboardEvent) => {
     } else if (event.key === 'Backspace') {
         if (editable.value?.innerText.length === 0) {
             event.preventDefault();
-            emit('deleteBlock')
+            emit('blockSelected', 'Text')
+            editable.value.innerHTML = ''
         }
     }
     previousKey.value = event.key
