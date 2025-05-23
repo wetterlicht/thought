@@ -11,8 +11,9 @@ import TextBlock from "@/components/Blocks/TextBlock.vue";
 import HeadingBlock from "@/components/Blocks/HeadingBlock.vue";
 import ImageBlock from "@/components/Blocks/ImageBlock.vue";
 import type { AssembledPage, AssetDocument, Block, BlockList, BlockWithComponent, PageDocument, PageDocumentWithParent, RootDocument, WorkspaceWithPages } from "@/types";
-import NumberedListBlock from "@/components/Blocks/NumberedListBlock.vue";
 import TodoListBlock from "@/components/Blocks/TodoListBlock.vue";
+import BulletedListBlock from "@/components/Blocks/BulletedListBlock.vue";
+import NumberedListBlock from "@/components/Blocks/NumberedListBlock.vue";
 
 const repo = new Repo({
     network: [
@@ -254,6 +255,9 @@ const getComponent = (type: string) => {
         case 'Heading 3':
             component = HeadingBlock;
             break;
+        case 'Bulleted list':
+            component = BulletedListBlock;
+            break;
         case 'Numbered list':
             component = NumberedListBlock;
             break;
@@ -390,6 +394,7 @@ const createBlock = (type: string, existingId?: string): Block => {
                 level: 3
             }
             break;
+        case 'Bulleted list':
         case 'Numbered list':
             data = {
                 content: "",
