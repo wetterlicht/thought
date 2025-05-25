@@ -1,6 +1,6 @@
 <template>
     <div class="block-menu" v-if="menuOpen" @keydown="onKeydown" v-on-click-outside="closeMenu">
-        <input ref="input" v-model="query" type="text" placeholder="Search blocks..."
+        <input ref="input" v-model="menuQuery" type="text" placeholder="Search blocks..."
             class="w-full p-1 mb-2 border border-stone-300 rounded-md focus-visible:outline-0" />
         <div v-for="section in filteredSections" class="block-menu__section">
             <div class="block-menu__section-title">{{ section.name }}</div>
@@ -20,10 +20,8 @@ import { nextTick, ref, watch } from 'vue';
 import { useBlockMenu } from '../composables/useBlockMenu';
 import { vOnClickOutside } from '@vueuse/components'
 
-const { menuQuery, menuOpen, selectedBlock, filteredSections, closeMenu, moveSelection, updateQuery, confirmSelection } = useBlockMenu();
+const { menuQuery, menuOpen, selectedBlock, filteredSections, closeMenu, moveSelection, confirmSelection } = useBlockMenu();
 
-
-const query = ref('');
 const input = ref<HTMLInputElement | null>(null);
 
 watch(menuOpen, (newMenuOpen) => {
@@ -34,10 +32,6 @@ watch(menuOpen, (newMenuOpen) => {
             }
         });
     }
-});
-
-watch(query, (newQuery) => {
-    updateQuery(newQuery);
 });
 
 const onKeydown = (event: KeyboardEvent) => {

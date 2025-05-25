@@ -1,7 +1,7 @@
 <template>
     <TextElement :component="tag" :blockId="id" :content="content" @updateContent="onUpdateContent"
-        @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')"
-        @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
+        @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
+        @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
         @deleteBlock="emit('deleteBlock', id)" ref="textElement" contenteditable>
     </TextElement>
 </template>
@@ -27,7 +27,7 @@ const tag = computed(() => {
     return "h" + (props.data.level + 1)
 })
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
 
 
 function focusBlock(focusStart: boolean) {

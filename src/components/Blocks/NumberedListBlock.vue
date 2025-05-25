@@ -1,9 +1,9 @@
 <template>
     <li class="flex">
         <TextElement ref="textElement" :blockId="id" :content="content" @updateContent="onUpdateContent"
-            @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')"
-            @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
-            @deleteBlock="emit('deleteBlock', id)" contenteditable>
+            @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
+            @focusBlock="emit('focusBlock', id)" @focusPrevious="emit('focusPrevious', id)"
+            @focusNext="emit('focusNext', id)" @deleteBlock="emit('deleteBlock', id)" contenteditable>
         </TextElement>
     </li>
 </template>
@@ -29,7 +29,7 @@ const textElement = ref();
 
 const { updateBlockData } = useRepo();
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
 
 const editable: Ref<HTMLElement | null> = ref(null)
 

@@ -20,7 +20,6 @@ const router = useRouter();
 const name = ref("");
 
 const onSubmit = () => {
-    console.log("onSubmit")
     const id = createWorkspace(name.value);
     router.push(`/workspaces/${id}`);
 }

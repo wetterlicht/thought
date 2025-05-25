@@ -2,9 +2,9 @@
     <li class="flex gap-x-2">
         <div class="rounded-full bg-black size-1.5 mt-[0.5625rem] ml-1"></div>
         <TextElement ref="textElement" :blockId="id" :content="content" @updateContent="onUpdateContent"
-            @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')"
-            @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
-            @deleteBlock="emit('deleteBlock', id)" contenteditable>
+            @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
+            @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious', id)"
+            @focusNext="emit('focusNext', id)" @deleteBlock="emit('deleteBlock', id)" contenteditable>
         </TextElement>
     </li>
 </template>
@@ -29,7 +29,7 @@ const content = ref(props.data.content);
 
 const { updateBlockData } = useRepo();
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
 
 const textElement = ref();
 

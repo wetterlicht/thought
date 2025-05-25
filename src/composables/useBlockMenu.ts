@@ -34,15 +34,17 @@ const sections = [
 ];
 
 type SelectionCallback = (type: string) => void;
+type CloseCallback = () => void;
 
 const selectionCallback = ref<SelectionCallback>();
+const closeCallback = ref<(CloseCallback)>();
 const menuOpen = ref(false);
 const menuQuery = ref('');
 const menuPosition = ref({ top: 0, left: 0 });
 const selectionIndex = ref(0);
 const canOpenMenu = ref(true);
 
-function openMenu(_selectionCallback: SelectionCallback, query = '', position = { top: 0, left: 0 }) {
+function openMenu(_selectionCallback: SelectionCallback, _closeCallback: CloseCallback, query = '', position = { top: 0, left: 0 }) {
     if (menuOpen.value) {
         return;
     }
@@ -51,14 +53,12 @@ function openMenu(_selectionCallback: SelectionCallback, query = '', position = 
     menuPosition.value = position;
     selectionIndex.value = 0;
     selectionCallback.value = _selectionCallback;
+    closeCallback.value = _closeCallback;
 }
 
 function closeMenu() {
+    menuQuery.value = '';
     menuOpen.value = false
-}
-
-function updateQuery(newQuery: string) {
-    menuQuery.value = newQuery
 }
 
 function moveSelection(direction: 1 | -1) {
@@ -80,7 +80,7 @@ const filteredSections = computed(() => {
     const result: { name: string, blocks: { name: string }[] }[] = [];
     sections.forEach(section => {
         const blocks = section.blocks.filter(block => {
-            const filter = menuQuery.value.substring(1).toLowerCase();
+            const filter = menuQuery.value.toLowerCase();
             return block.name.toLowerCase().includes(filter);
         })
         if (blocks.length > 0) {
@@ -114,7 +114,6 @@ export function useBlockMenu() {
         filteredSections,
         openMenu,
         closeMenu,
-        updateQuery,
         moveSelection,
         confirmSelection,
     }

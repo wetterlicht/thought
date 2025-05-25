@@ -363,7 +363,6 @@ const replaceBlock = (blockListId: string, blockId: string, type: string) => {
         const index = blockList.blockIds.findIndex(id => id === blockId);
         blockList.blockIds.splice(index, 1, newBlock.id);
     }));
-    console.log(`Replaced block ${blockId} with new block ${newBlock.id}`);
     return newBlock.id
 }
 

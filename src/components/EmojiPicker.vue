@@ -71,10 +71,8 @@ const filteredEmojis = computed(() => {
     if (!query.value) {
         return emojis;
     }
-    console.log("filter", query.value);
     const lowercaseQuery = query.value.toLowerCase();
     const result = emojis.filter((emoji) => emoji.description.toLowerCase().includes(lowercaseQuery) || emoji.emoji.includes(lowercaseQuery));
-    console.log("result", result);
     return result;
 });
 

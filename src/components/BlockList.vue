@@ -4,9 +4,10 @@
             :is="getWrapperComponent(group[0].type)">
             <component v-for="block in group" :key="block.id" class="px-[3px] py-[2px]"
                 :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :id="block.id"
-                :data="block.data" @replaceBlock="(type: string) => onBlockSelected(block.id, type)"
+                :data="block.data" @insertBlockAfter="(type: string) => onBlockSelected(block.id, type)"
                 @newBlock="() => onNewBlock(getBlockListIndex(block.id))" @focusPrevious="onFocusPrevious"
-                @focusNext="onFocusNext" @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
+                @focusBlock="focusBlock(block.id, true)" @focusNext="onFocusNext"
+                @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
             </component>
         </component>
     </div>
@@ -66,11 +67,7 @@ const getWrapperComponent = (type: string) => {
 }
 
 const onBlockSelected = (blockId: string, type: string) => {
-    console.log("On block selected: ", blockId, " with type: ", type);
-    const newId = replaceBlock(props.blockListId, blockId, type);
-    nextTick(() => {
-        focusBlock(newId, false)
-    })
+    insertBlock(type, getBlockListIndex(blockId));
 }
 
 const onNewBlock = (beforeIndex: number) => {
@@ -82,7 +79,6 @@ const onNewBlock = (beforeIndex: number) => {
 }
 
 const insertBlock = (type: string, beforeIndex: number) => {
-    console.log("Inserting block of type: ", type, " at index: ", beforeIndex);
     const blockId = insertBlockAtIndex(props.blockListId, type, beforeIndex + 1);
     nextTick(() => {
         focusBlock(blockId, true)

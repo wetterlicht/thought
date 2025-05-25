@@ -1,13 +1,13 @@
 <template>
     <TextElement ref="textElement" :id="`${id}-text`" contenteditable component="p" :blockId="id" :content="content"
-        @updateContent="onUpdateContent" @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')"
-        @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
-        @deleteBlock="emit('deleteBlock', id)">
+        @updateContent="onUpdateContent" @insertBlockAfter="emit('insertBlockAfter', $event)"
+        @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock', id)" @focusPrevious="emit('focusPrevious', id)"
+        @focusNext="emit('focusNext', id)" @deleteBlock="emit('deleteBlock', id)">
     </TextElement>
 </template>
 
 <script setup lang="ts">
-import { type PropType, type Ref, ref } from 'vue';
+import { type PropType, ref } from 'vue';
 import { useRepo } from '@/composables/useRepo';
 import TextElement from '../TextElement.vue';
 
@@ -27,7 +27,7 @@ const textElement = ref();
 
 const { updateBlockData } = useRepo();
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
 
 function focusBlock(focusStart: boolean) {
     if (textElement.value === null) {

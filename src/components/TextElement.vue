@@ -1,13 +1,13 @@
 <template>
     <component :is="component" spellcheck="false" ref="editable"
-        placeholder="Write, or press ‘/’ to add a block &hellip;" :contenteditable="true" @input="onInput"
+        placeholder="Write, or press Ctrl+i to add a block &hellip;" :contenteditable="true" @input="onInput"
         @keydown="onKeydown" class="w-full focus-within:outline-0 leading-6">{{
             content }}</component>
 </template>
 
 <script setup lang="ts">
 import { useBlockMenu } from '@/composables/useBlockMenu';
-import { ref, type Ref } from 'vue';
+import { nextTick, ref, type Ref } from 'vue';
 
 const props = defineProps({
     component: {
@@ -24,7 +24,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent']);
 const openMenu = useBlockMenu().openMenu;
 
 const editable: Ref<HTMLElement | null> = ref(null)
@@ -50,7 +50,11 @@ const onKeydown = (event: KeyboardEvent) => {
         event.preventDefault();
 
         openMenu((type) => {
-            emit('replaceBlock', type);
+            emit('insertBlockAfter', type);
+        }, () => {
+            nextTick(() => {
+                emit('focusBlock', props.blockId);
+            });
         });
     } else if (event.key === 'Backspace') {
         if (editable.value?.innerText.length === 0 || editable.value?.innerText === '\n') {

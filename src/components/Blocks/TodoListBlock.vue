@@ -2,9 +2,9 @@
     <li class="flex gap-x-2">
         <input type="checkbox" :id="checkboxId" :checked="data.checked" @change="onCheckboxChange" />
         <TextElement ref="textElement" :blockId="id" :content="content" contenteditable @updateContent="onUpdateContent"
-            @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')"
-            @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
-            @deleteBlock="emit('deleteBlock', id)">
+            @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
+            @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious', id)"
+            @focusNext="emit('focusNext', id)" @deleteBlock="emit('deleteBlock', id)">
         </TextElement>
     </li>
 </template>
@@ -31,7 +31,7 @@ const checkboxId = computed(() => `checkbox-${props.id}`);
 
 const { updateBlockData } = useRepo();
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
 
 const onCheckboxChange = (event: Event) => {
     const element = (event.target as HTMLInputElement);
