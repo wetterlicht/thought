@@ -1,11 +1,13 @@
 <template>
-    <div class="block-menu" v-if="menuOpen">
+    <div class="block-menu" v-if="menuOpen" @keydown="onKeydown" v-on-click-outside="closeMenu">
+        <input ref="input" v-model="query" type="text" placeholder="Search blocks..."
+            class="w-full p-1 mb-2 border border-stone-300 rounded-md focus-visible:outline-0" />
         <div v-for="section in filteredSections" class="block-menu__section">
             <div class="block-menu__section-title">{{ section.name }}</div>
             <ul>
                 <li v-for="block in section.blocks" :data-block-name="block.name"
                     :class="{ active: selectedBlock.name === block.name }">
-                    <button>{{
+                    <button @click="confirmSelection">{{
                         block.name }}</button>
                 </li>
             </ul>
@@ -14,10 +16,48 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { useBlockMenu } from '../composables/useBlockMenu';
+import { vOnClickOutside } from '@vueuse/components'
 
-const { menuOpen, selectedBlock, filteredSections } = useBlockMenu();
+const { menuQuery, menuOpen, selectedBlock, filteredSections, closeMenu, moveSelection, updateQuery, confirmSelection } = useBlockMenu();
+
+
+const query = ref('');
+const input = ref<HTMLInputElement | null>(null);
+
+watch(menuOpen, (newMenuOpen) => {
+    if (newMenuOpen) {
+        nextTick(() => {
+            if (input.value) {
+                input.value.focus();
+            }
+        });
+    }
+});
+
+watch(query, (newQuery) => {
+    updateQuery(newQuery);
+});
+
+const onKeydown = (event: KeyboardEvent) => {
+    if (!menuOpen.value) {
+        return;
+    }
+    if (event.key === 'Escape') {
+        closeMenu();
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        confirmSelection();
+    }
+    else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        moveSelection(1);
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        moveSelection(-1)
+    }
+}
 
 watch(selectedBlock, (newSelectedBlock) => {
     if (selectedBlock.value) {

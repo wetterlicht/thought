@@ -354,15 +354,16 @@ const deleteBlockAtIndex = (blockListId: string, index: number) => {
     })
 }
 
-const replaceBlockAtIndex = (blockListId: string, type: string, index: number) => {
+const replaceBlock = (blockListId: string, blockId: string, type: string) => {
     const newBlock = createBlock(type);
     getCurrentPageHandle().change((doc => {
-        const existingBlockId = doc.blockLists[blockListId].blockIds[index];
-        delete doc.blocks[existingBlockId];
+        delete doc.blocks[blockId];
         doc.blocks[newBlock.id] = newBlock;
         const blockList: BlockList = doc.blockLists[blockListId];
+        const index = blockList.blockIds.findIndex(id => id === blockId);
         blockList.blockIds.splice(index, 1, newBlock.id);
     }));
+    console.log(`Replaced block ${blockId} with new block ${newBlock.id}`);
     return newBlock.id
 }
 
@@ -373,24 +374,24 @@ const createBlock = (type: string, existingId?: string): Block => {
     switch (type) {
         case 'Text':
             data = {
-                content: []
+                content: ''
             }
             break;
         case 'Heading 1':
             data = {
-                content: [],
+                content: '',
                 level: 1
             }
             break;
         case 'Heading 2':
             data = {
-                content: [],
+                content: '',
                 level: 2
             }
             break;
         case 'Heading 3':
             data = {
-                content: [],
+                content: '',
                 level: 3
             }
             break;
@@ -414,7 +415,7 @@ const createBlock = (type: string, existingId?: string): Block => {
             }
             break;
         default:
-            throw new Error("Unknown block name: " + name);
+            throw new Error("Unknown block type: " + type);
     }
 
     return {
@@ -459,7 +460,7 @@ export function useRepo() {
         updateBlockData,
         insertBlockAtIndex,
         deleteBlockAtIndex,
-        replaceBlockAtIndex,
+        replaceBlock,
         createAsset,
         setCoverImage,
         setPageTitle,

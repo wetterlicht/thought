@@ -33,20 +33,24 @@ const sections = [
     },
 ];
 
+type SelectionCallback = (type: string) => void;
+
+const selectionCallback = ref<SelectionCallback>();
 const menuOpen = ref(false);
 const menuQuery = ref('');
 const menuPosition = ref({ top: 0, left: 0 });
 const selectionIndex = ref(0);
 const canOpenMenu = ref(true);
 
-function openMenu(query = '', position = { top: 0, left: 0 }) {
+function openMenu(_selectionCallback: SelectionCallback, query = '', position = { top: 0, left: 0 }) {
     if (menuOpen.value) {
         return;
     }
-    menuOpen.value = true
-    menuQuery.value = query
-    menuPosition.value = position
-    selectionIndex.value = 0
+    menuOpen.value = true;
+    menuQuery.value = query;
+    menuPosition.value = position;
+    selectionIndex.value = 0;
+    selectionCallback.value = _selectionCallback;
 }
 
 function closeMenu() {
@@ -59,6 +63,17 @@ function updateQuery(newQuery: string) {
 
 function moveSelection(direction: 1 | -1) {
     selectionIndex.value = (selectionIndex.value + direction + filteredBlocks.value.length) % filteredBlocks.value.length
+}
+
+function confirmSelection() {
+    if (selectionCallback.value && filteredBlocks.value.length > 0) {
+        const type = filteredBlocks.value[selectionIndex.value]?.name;
+        if (!type) {
+            return;
+        }
+        selectionCallback.value(type);
+    }
+    closeMenu();
 }
 
 const filteredSections = computed(() => {
@@ -100,6 +115,7 @@ export function useBlockMenu() {
         openMenu,
         closeMenu,
         updateQuery,
-        moveSelection
+        moveSelection,
+        confirmSelection,
     }
 }

@@ -24,17 +24,17 @@
             </div>
         </div>
         <h1 class="text-4xl font-bold mb-4 px-[3px] py-[2px]" ref="pageTitleElement" placeholder="Page Title"
-            contenteditable="true" @input="saveTitle"
-            @keydown.enter.prevent="() => insertBlockAtIndex(currentPage!.blockListId, 'Text', 0)">
+            contenteditable="true" @input="saveTitle" @keydown.enter.prevent="onInsertFirstBlock">
             {{ pageTitle }}
         </h1>
-        <BlockList :blockListId="currentPage!.blockListId"></BlockList>
+        <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPageTitle="onFocusPageTitle">
+        </BlockList>
         <BlockMenu />
     </div>
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref } from 'vue';
+import { nextTick, type Ref, ref } from 'vue';
 import BlockMenu from '@/components/BlockMenu.vue';
 import { useRepo } from '@/composables/useRepo';
 import BlockList from './BlockList.vue';
@@ -61,6 +61,32 @@ const hideEmojiPicker = () => {
 const saveTitle = (event: Event) => {
     const element = (event.target as HTMLElement);
     setPageTitle(element.innerText);
+}
+
+const blockList = ref();
+
+const onInsertFirstBlock = () => {
+    if (currentPage.value?.blockListId) {
+        const blockId = insertBlockAtIndex(currentPage.value.blockListId, 'Text', 0);
+        nextTick(() => blockList.value.focusBlock(blockId));
+    }
+}
+
+const onFocusPageTitle = () => {
+    nextTick(() => {
+        if (pageTitleElement.value) {
+            pageTitleElement.value.focus();
+            const range = document.createRange();
+            range.selectNodeContents(pageTitleElement.value);
+            range.collapse(false);
+
+            const sel = window.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+    });
 }
 </script>
 

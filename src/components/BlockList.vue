@@ -2,9 +2,9 @@
     <div class="blocks">
         <component v-for="(group, groupIndex) in blockGroups" :key="groupIndex"
             :is="getWrapperComponent(group[0].type)">
-            <component v-for="block in group" :key="block.id" :id="block.id" class="px-[3px] py-[2px]"
-                :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :data="block.data"
-                @blockSelected="(name: string) => onBlockSelected(name, getBlockListIndex(block.id))"
+            <component v-for="block in group" :key="block.id" class="px-[3px] py-[2px]"
+                :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :id="block.id"
+                :data="block.data" @replaceBlock="(type: string) => onBlockSelected(block.id, type)"
                 @newBlock="() => onNewBlock(getBlockListIndex(block.id))" @focusPrevious="onFocusPrevious"
                 @focusNext="onFocusNext" @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
             </component>
@@ -17,13 +17,14 @@ import { useRepo } from '@/composables/useRepo';
 import type { BlockWithComponent, FocusableBlock } from '@/types';
 import { computed, nextTick, ref, type Ref } from 'vue';
 
+const { replaceBlock, deleteBlockAtIndex, insertBlockAtIndex, blocksByListId } = useRepo();
 const props = defineProps({
     blockListId: {
         type: String,
         required: true
     }
 });
-const { deleteBlockAtIndex, insertBlockAtIndex, replaceBlockAtIndex, blocksByListId } = useRepo();
+const emit = defineEmits(['focusPageTitle']);
 
 const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
@@ -64,10 +65,11 @@ const getWrapperComponent = (type: string) => {
     }
 }
 
-const onBlockSelected = (type: string, index: number) => {
-    const id = replaceBlockAtIndex(props.blockListId, type, index);
+const onBlockSelected = (blockId: string, type: string) => {
+    console.log("On block selected: ", blockId, " with type: ", type);
+    const newId = replaceBlock(props.blockListId, blockId, type);
     nextTick(() => {
-        focusBlock(id, false)
+        focusBlock(newId, false)
     })
 }
 
@@ -92,12 +94,16 @@ const onDeleteBlock = (index: number) => {
     if (index > 0) {
         const id = blocks.value[index - 1].id
         focusBlock(id, false)
+    } else {
+        emit('focusPageTitle');
     }
 }
 
 function focusBlock(id: string, focusStart: boolean) {
     blockRefs.value[id].focusBlock(focusStart);
 }
+
+defineExpose({ focusBlock });
 
 const onFocusPrevious = (id: string) => {
     const currentIndex = blocks.value.findIndex(block => block.id === id);

@@ -27,7 +27,7 @@ const assetId = ref();
 const alt = ref();
 const caption = ref();
 
-const emit = defineEmits(['blockSelected', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateBlock']);
+const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateBlock']);
 
 const addImageButton: Ref<HTMLElement | null> = ref(null)
 
