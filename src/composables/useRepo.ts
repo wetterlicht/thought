@@ -420,8 +420,9 @@ const createBlock = (type: string, existingId?: string): Block => {
         case 'Callout':
             const blockList = createBlockList();
             data = {
-                icon: '',
+                icon: '💡',
                 blockListId: blockList.id,
+                backgroundColor: 'oklch(97% 0.001 106.424)'
             }
             insertBlockAtIndex(blockList.id, 'Text', 0);
             break;

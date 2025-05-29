@@ -4,13 +4,13 @@
             <div class="px-3 mb-4 border-b border-stone-300 pt-4 pb-3 flex gap-x-4 items-center">
                 <form class="flex-grow">
                     <input v-model="query" type="text" id="emoji-picker-search"
-                        class="w-full rounded-md border border-stone-300 text-sm py-1 px-3 bg-stone-100"
+                        class="w-full rounded-md border border-stone-300 text-sm py-1 px-3"
                         placeholder="Filter &hellip;">
                 </form>
                 <button @click="emit('remove')"
-                    class=" text-sm text-stone-600 rounded hover:bg-stone-100 py-1 px-3 ml-auto block">Remove</button>
+                    class=" text-sm text-stone-600 rounded hover:bg-stone-200 py-1 px-3 ml-auto block">Remove</button>
                 <button @click="emit('close')"
-                    class=" text-sm text-stone-600 rounded hover:bg-stone-100 py-1 px-3 ml-auto block">Close</button>
+                    class=" text-sm text-stone-600 rounded hover:bg-stone-200 py-1 px-3 ml-auto block">Close</button>
             </div>
             <div class="h-96 w-[32rem] overflow-y-auto">
                 <template v-if="filteredEmojis.length === 0">
@@ -21,7 +21,7 @@
                         <ul class="grid grid-cols-16 gap-px">
                             <li v-for="emoji in filteredEmojis" :key="emoji.emoji">
                                 <button @click="emit('select', emoji.emoji)"
-                                    class=" text-xl hover:bg-stone-100 rounded-md p-0.5">
+                                    class=" text-xl border border-transparent hover:border-stone-600 rounded-md p-0.5">
                                     {{ emoji.emoji }}
                                 </button>
                             </li>
@@ -31,14 +31,7 @@
                 <template v-else>
                     <div v-for="group in groups" class="mb-6 px-3">
                         <div class="text-sm text-stone-600 mb-1">{{ group.category }}</div>
-                        <ul class="grid grid-cols-16 gap-px">
-                            <li v-for="emoji in group.emojis">
-                                <button @click="emit('select', emoji)"
-                                    class=" text-xl hover:bg-stone-100 rounded-md p-0.5">
-                                    {{ emoji }}
-                                </button>
-                            </li>
-                        </ul>
+                        <EmojiGrid :group="group" @select="emit('select', $event)"></EmojiGrid>
                     </div>
                 </template>
             </div>
@@ -49,6 +42,7 @@
 <script setup lang="ts">
 import { getEmojis } from "unicode-emoji";
 import { computed, ref } from "vue";
+import EmojiGrid from './EmojiGrid.vue';
 const emit = defineEmits(['select', 'remove', 'close']);
 const emojis = getEmojis();
 
