@@ -24,7 +24,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent']);
+const emit = defineEmits(['insertBlockAfter', 'replaceBlock', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent']);
 const openMenu = useBlockMenu().openMenu;
 
 const editable: Ref<HTMLElement | null> = ref(null)
@@ -39,29 +39,38 @@ const onKeydown = (event: KeyboardEvent) => {
     } else if (event.key === 'ArrowDown') {
         if (isCaretAtEnd()) {
             event.preventDefault()
-            emit('focusNext', props.blockId)
+            emit('focusNext')
         }
     } else if (event.key === 'ArrowUp') {
         if (isCaretAtStart()) {
             event.preventDefault()
-            emit('focusPrevious', props.blockId)
+            emit('focusPrevious')
         }
     } else if (event.ctrlKey && event.key === 'i') {
         event.preventDefault();
 
         openMenu((type) => {
-            emit('insertBlockAfter', type);
+            if (isEmpty()) {
+                emit('replaceBlock', type);
+            } else {
+                emit('insertBlockAfter', type);
+
+            }
         }, () => {
             nextTick(() => {
-                emit('focusBlock', props.blockId);
+                emit('focusBlock');
             });
         });
     } else if (event.key === 'Backspace') {
-        if (editable.value?.innerText.length === 0 || editable.value?.innerText === '\n') {
+        if (isEmpty()) {
             event.preventDefault();
             emit('deleteBlock', props.blockId);
         }
     }
+}
+
+function isEmpty() {
+    return editable.value?.innerText.length === 0 || editable.value?.innerText === '\n'
 }
 
 function isCaretAtStart() {

@@ -1,9 +1,9 @@
 <template>
     <li class="flex">
         <TextElement ref="textElement" :blockId="id" :content="content" @updateContent="onUpdateContent"
-            @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
-            @focusBlock="emit('focusBlock', id)" @focusPrevious="emit('focusPrevious', id)"
-            @focusNext="emit('focusNext', id)" @deleteBlock="emit('deleteBlock', id)" contenteditable>
+            @insertBlockAfter="emit('insertBlockAfter', $event)" @replaceBlock="emit('replaceBlock', $event)"
+            @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious')"
+            @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')">
         </TextElement>
     </li>
 </template>
@@ -12,6 +12,7 @@
 import { type PropType, type Ref, ref } from 'vue';
 import { useRepo } from '@/composables/useRepo';
 import TextElement from '../TextElement.vue';
+import { useBlockEvents } from '@/composables/useBlockEvents';
 
 const props = defineProps({
     id: {
@@ -29,7 +30,7 @@ const textElement = ref();
 
 const { updateBlockData } = useRepo();
 
-const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(useBlockEvents().events);
 
 const editable: Ref<HTMLElement | null> = ref(null)
 

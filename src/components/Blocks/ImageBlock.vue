@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="ts">
+import { useBlockEvents } from '@/composables/useBlockEvents';
 import { useRepo } from '@/composables/useRepo';
 import { type Ref, ref } from 'vue';
 
@@ -27,7 +28,7 @@ const assetId = ref();
 const alt = ref();
 const caption = ref();
 
-const emit = defineEmits(['replaceBlock', 'newBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateBlock']);
+const emit = defineEmits(useBlockEvents().events);
 
 const addImageButton: Ref<HTMLElement | null> = ref(null)
 

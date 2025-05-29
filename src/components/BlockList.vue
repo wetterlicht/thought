@@ -4,9 +4,11 @@
             :is="getWrapperComponent(group[0].type)">
             <component v-for="block in group" :key="block.id" class="px-[3px] py-[2px]"
                 :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :id="block.id"
-                :data="block.data" @insertBlockAfter="(type: string) => onBlockSelected(block.id, type)"
-                @newBlock="() => onNewBlock(getBlockListIndex(block.id))" @focusPrevious="onFocusPrevious"
-                @focusBlock="focusBlock(block.id, true)" @focusNext="onFocusNext"
+                :data="block.data" @replaceBlock="(type: string) => onReplaceBlock(block.id, type)"
+                @insertBlockAfter="(type: string) => onInsertBlockAfter(block.id, type)"
+                @newBlock="() => onNewBlock(getBlockListIndex(block.id))"
+                @focusPrevious="() => onFocusPrevious(block.id)" @focusBlock="focusBlock(block.id, true)"
+                @focusNext="() => onFocusNext(block.id)"
                 @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
             </component>
         </component>
@@ -25,7 +27,7 @@ const props = defineProps({
         required: true
     }
 });
-const emit = defineEmits(['focusPageTitle']);
+const emit = defineEmits(['focusPrevious', 'focusNext']);
 
 const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
@@ -66,8 +68,15 @@ const getWrapperComponent = (type: string) => {
     }
 }
 
-const onBlockSelected = (blockId: string, type: string) => {
+const onInsertBlockAfter = (blockId: string, type: string) => {
     insertBlock(type, getBlockListIndex(blockId));
+}
+
+const onReplaceBlock = (blockId: string, type: string) => {
+    const newBlockId = replaceBlock(props.blockListId, blockId, type);
+    nextTick(() => {
+        focusBlock(newBlockId, true);
+    });
 }
 
 const onNewBlock = (beforeIndex: number) => {
@@ -91,7 +100,7 @@ const onDeleteBlock = (index: number) => {
         const id = blocks.value[index - 1].id
         focusBlock(id, false)
     } else {
-        emit('focusPageTitle');
+        emit('focusPrevious');
     }
 }
 
@@ -106,6 +115,8 @@ const onFocusPrevious = (id: string) => {
     if (currentIndex > 0) {
         const id = blocks.value[currentIndex - 1].id
         focusBlock(id, false)
+    } else {
+        emit('focusPrevious');
     }
 }
 
@@ -114,6 +125,8 @@ const onFocusNext = (id: string) => {
     if (currentIndex < blocks.value.length - 1) {
         const id = blocks.value[currentIndex + 1].id
         focusBlock(id, true)
+    } else {
+        emit('focusNext');
     }
 }
 

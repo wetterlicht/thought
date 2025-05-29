@@ -1,8 +1,8 @@
 <template>
-    <TextElement :component="tag" :blockId="id" :content="content" @updateContent="onUpdateContent"
-        @insertBlockAfter="emit('insertBlockAfter', $event)" @newBlock="emit('newBlock')"
-        @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious', id)" @focusNext="emit('focusNext', id)"
-        @deleteBlock="emit('deleteBlock', id)" ref="textElement" contenteditable>
+    <TextElement :component="tag" :blockId="id" :content="content" ref="textElement" contenteditable
+        @updateContent="onUpdateContent" @insertBlockAfter="emit('insertBlockAfter', $event)"
+        @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock')"
+        @focusPrevious="emit('focusPrevious')" @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')">
     </TextElement>
 </template>
 
@@ -10,6 +10,7 @@
 import { useRepo } from '@/composables/useRepo';
 import { computed, type PropType, ref } from 'vue';
 import TextElement from '../TextElement.vue';
+import { useBlockEvents } from '@/composables/useBlockEvents';
 
 const props = defineProps({
     id: { type: String, required: true },
@@ -27,7 +28,7 @@ const tag = computed(() => {
     return "h" + (props.data.level + 1)
 })
 
-const emit = defineEmits(['insertBlockAfter', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock']);
+const emit = defineEmits(useBlockEvents().events);
 
 
 function focusBlock(focusStart: boolean) {

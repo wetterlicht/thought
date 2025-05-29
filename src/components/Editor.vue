@@ -27,7 +27,7 @@
             contenteditable="true" @input="saveTitle" @keydown.enter.prevent="onInsertFirstBlock">
             {{ pageTitle }}
         </h1>
-        <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPageTitle="onFocusPageTitle">
+        <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPrevious="onFocusPageTitle">
         </BlockList>
         <BlockMenu />
     </div>

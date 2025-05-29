@@ -359,7 +359,6 @@ const deleteBlockAtIndex = (blockListId: string, index: number) => {
 }
 
 const replaceBlock = (blockListId: string, blockId: string, type: string) => {
-    console.log(`Replacing block ${blockId} with type ${type} in block list ${blockListId}`);
     const newBlock = createBlock(type);
     getCurrentPageHandle().change((doc => {
         delete doc.blocks[blockId];
