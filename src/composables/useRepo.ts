@@ -14,6 +14,7 @@ import type { AssembledPage, AssetDocument, Block, BlockList, BlockWithComponent
 import TodoListBlock from "@/components/Blocks/TodoListBlock.vue";
 import BulletedListBlock from "@/components/Blocks/BulletedListBlock.vue";
 import NumberedListBlock from "@/components/Blocks/NumberedListBlock.vue";
+import CalloutBlock from "@/components/Blocks/CalloutBlock.vue";
 
 const repo = new Repo({
     network: [
@@ -267,6 +268,9 @@ const getComponent = (type: string) => {
         case 'Image':
             component = ImageBlock;
             break;
+        case 'Callout':
+            component = CalloutBlock;
+            break;
         default:
             throw new Error("Unknown block type: " + type);
     }
@@ -355,6 +359,7 @@ const deleteBlockAtIndex = (blockListId: string, index: number) => {
 }
 
 const replaceBlock = (blockListId: string, blockId: string, type: string) => {
+    console.log(`Replacing block ${blockId} with type ${type} in block list ${blockListId}`);
     const newBlock = createBlock(type);
     getCurrentPageHandle().change((doc => {
         delete doc.blocks[blockId];
@@ -413,6 +418,14 @@ const createBlock = (type: string, existingId?: string): Block => {
                 caption: null
             }
             break;
+        case 'Callout':
+            const blockList = createBlockList();
+            data = {
+                icon: '',
+                blockListId: blockList.id,
+            }
+            insertBlockAtIndex(blockList.id, 'Text', 0);
+            break;
         default:
             throw new Error("Unknown block type: " + type);
     }
@@ -422,6 +435,18 @@ const createBlock = (type: string, existingId?: string): Block => {
         type,
         data
     }
+}
+
+const createBlockList = (): BlockList => {
+    const id = crypto.randomUUID();
+    const blockList = {
+        id,
+        blockIds: []
+    }
+    getCurrentPageHandle().change((doc) => {
+        doc.blockLists[id] = blockList;
+    });
+    return blockList;
 }
 
 const setCoverImage = (id: AutomergeUrl) => {

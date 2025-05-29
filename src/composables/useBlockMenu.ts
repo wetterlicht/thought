@@ -29,6 +29,9 @@ const sections = [
             {
                 name: "Todo list"
             },
+            {
+                name: "Callout"
+            },
         ]
     },
 ];
