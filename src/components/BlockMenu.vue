@@ -1,7 +1,7 @@
 <template>
     <div class="block-menu" v-if="menuOpen" @keydown="onKeydown" v-on-click-outside="closeMenu">
         <input ref="input" v-model="menuQuery" type="text" placeholder="Search blocks..."
-            class="w-full p-1 mb-2 border border-stone-300 rounded-md focus-visible:outline-0" />
+            class="w-full px-2 py-1 mb-2 border border-stone-300 rounded-md" />
         <div v-for="section in filteredSections" class="block-menu__section">
             <div class="block-menu__section-title">{{ section.name }}</div>
             <ul>
@@ -141,7 +141,7 @@ function getScrollableParent(element: HTMLElement) {
             cursor: pointer;
             text-align: left;
             border-radius: 4px;
-            padding-block: 4px;
+            padding: 0.25rem 0.5rem;
             font-size: 1rem;
 
             &:hover {
