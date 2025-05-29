@@ -8,8 +8,8 @@
                 @insertBlockAfter="(type: string) => onInsertBlockAfter(block.id, type)"
                 @newBlock="() => onNewBlock(getBlockListIndex(block.id))"
                 @focusPrevious="() => onFocusPrevious(block.id)" @focusBlock="focusBlock(block.id, true)"
-                @focusNext="() => onFocusNext(block.id)"
-                @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))">
+                @focusNext="() => onFocusNext(block.id)" @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))"
+                @click="focusBlock(block.id, true)">
             </component>
         </component>
     </div>
@@ -27,7 +27,7 @@ const props = defineProps({
         required: true
     }
 });
-const emit = defineEmits(['focusPrevious', 'focusNext']);
+const emit = defineEmits(['empty', 'focusPrevious', 'focusNext']);
 
 const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
@@ -102,13 +102,35 @@ const onDeleteBlock = (index: number) => {
     } else {
         emit('focusPrevious');
     }
+    if (blocks.value.length === 0) {
+        emit('empty');
+    }
 }
 
 function focusBlock(id: string, focusStart: boolean) {
     blockRefs.value[id].focusBlock(focusStart);
 }
 
-defineExpose({ focusBlock });
+function focusBlockAtIndex(index: number, focusStart: boolean) {
+    if (index >= 0 && index < blocks.value.length) {
+        const id = blocks.value[index].id;
+        focusBlock(id, focusStart);
+    }
+}
+
+const focusFirstBlock = () => {
+    if (blocks.value.length > 0) {
+        focusBlockAtIndex(0, true);
+    }
+}
+
+const focusLastBlock = () => {
+    if (blocks.value.length > 0) {
+        focusBlockAtIndex(blocks.value.length - 1, false);
+    }
+}
+
+defineExpose({ focusFirstBlock, focusLastBlock });
 
 const onFocusPrevious = (id: string) => {
     const currentIndex = blocks.value.findIndex(block => block.id === id);
