@@ -1,13 +1,9 @@
 <template>
     <div>
-        <div class="p-4 rounded grid grid-cols-[auto_1fr] border gap-2" :style="{
-            backgroundColor: data.backgroundColor || 'transparent',
-            borderColor: data.backgroundColor ? 'transparent' : 'var(--border-color)'
-        }">
+        <div class="px-4 py-4 rounded grid grid-cols-[auto_1fr] border gap-1" :class="computedClasses">
             <div>
                 <div v-if="data.icon">
-                    <button
-                        class="w-fit border border-transparent hover:border-stone-600 rounded leading-none aspect-square"
+                    <button class="border border-transparent hover:border-stone-600 rounded size-6"
                         @click="showEmojiPicker">{{
                             data.icon
                         }}</button>
@@ -18,8 +14,10 @@
                     </dialog>
                 </div>
             </div>
-            <BlockList ref="blockList" :blockListId="data.blockListId" @empty="onEmpty">
-            </BlockList>
+            <div>
+                <BlockList ref="blockList" :blockListId="data.blockListId" @empty="onEmpty">
+                </BlockList>
+            </div>
         </div>
     </div>
 </template>
@@ -27,7 +25,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
 import BlockList from '../BlockList.vue';
-import { ref, type Ref } from 'vue';
+import { computed, ref, type Ref } from 'vue';
 import EmojiPicker from '../EmojiPicker.vue';
 import { vOnClickOutside } from '@vueuse/components';
 import { useRepo } from '@/composables/useRepo';
@@ -39,9 +37,21 @@ const props = defineProps({
         required: true
     },
     data: {
-        type: Object as PropType<{ icon?: string, blockListId: string, backgroundColor?: string }>,
+        type: Object as PropType<{ icon?: string, blockListId: string, textColor: string | null, backgroundColor: string | null }>,
         required: true
     },
+})
+
+const computedClasses = computed(() => {
+    const classes: string[] = []
+    if (props.data.textColor) {
+        classes.push('text-' + props.data.textColor + '-600')
+    }
+    if (props.data.backgroundColor) {
+        classes.push('bg-' + props.data.backgroundColor + '-100');
+        classes.push('border-' + props.data.backgroundColor + '-100');
+    }
+    return classes;
 })
 
 const { updateBlockData } = useRepo();

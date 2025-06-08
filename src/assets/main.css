@@ -1,4 +1,13 @@
 @import "tailwindcss";
+@source inline("bg-red-100");
+@source inline("border-red-100");
+@source inline("text-red-600");
+@source inline("bg-orange-100");
+@source inline("border-orange-100");
+@source inline("text-orange-600");
+@source inline("bg-yellow-100");
+@source inline("border-yellow-100");
+@source inline("text-yellow-600");
 
 ol {
     counter-reset: item-counter;

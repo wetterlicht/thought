@@ -1,5 +1,5 @@
 <template>
-  <main class="p-4 flex-grow mx-4">
+  <main class="p-4 flex-grow overflow-auto">
     <Editor v-if="currentPage" :key="currentPageId"></Editor>
   </main>
 </template>

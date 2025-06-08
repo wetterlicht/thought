@@ -1,71 +1,39 @@
 <template>
-    <div class="blocks">
-        <component v-for="(group, groupIndex) in blockGroups" :key="groupIndex"
-            :is="getWrapperComponent(group[0].type)">
-            <component v-for="block in group" :key="block.id" class="px-[3px] py-[2px]"
-                :ref="(el: FocusableBlock) => { blockRefs[block.id] = el }" :is="block.component" :id="block.id"
-                :data="block.data" @replaceBlock="(type: string) => onReplaceBlock(block.id, type)"
-                @insertBlockAfter="(type: string) => onInsertBlockAfter(block.id, type)"
-                @newBlock="() => onNewBlock(getBlockListIndex(block.id))"
-                @focusPrevious="() => onFocusPrevious(block.id)" @focusBlock="focusBlock(block.id, true)"
-                @focusNext="() => onFocusNext(block.id)" @deleteBlock="() => onDeleteBlock(getBlockListIndex(block.id))"
-                @click="focusBlock(block.id, true)">
-            </component>
-        </component>
+    <div class="blocks grid gap-y-2">
+        <Block v-for="(block, index) in blocks" :ref="(el) => {
+            if (!blockRefs.value) {
+                blockRefs.value = {};
+            }
+            if (el) {
+                blockRefs.value[block.id] = el;
+            } else {
+                delete blockRefs.value[block.id];
+            }
+        }" :block="block" :key="block.id" :data-block-id="block.id" @delete-block="onDeleteBlock(index)"
+            class="relative flex gap-1">
+        </Block>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useRepo } from '@/composables/useRepo';
-import type { BlockWithComponent, FocusableBlock } from '@/types';
+import type { FocusableBlock } from '@/types';
 import { computed, nextTick, ref, type Ref } from 'vue';
+import Block from './Block.vue';
 
 const { replaceBlock, deleteBlockAtIndex, insertBlockAtIndex, blocksByListId } = useRepo();
 const props = defineProps({
     blockListId: {
         type: String,
         required: true
-    }
+    },
 });
 const emit = defineEmits(['empty', 'focusPrevious', 'focusNext']);
-
-const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
+const blockRefs = ref<Record<string, FocusableBlock>>({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
-
-const blockGroups = computed(() => {
-    const groups = [];
-    let currentGroup: BlockWithComponent[] = [];
-    blocks.value.forEach((block, i) => {
-        if (
-            currentGroup.length === 0 ||
-            currentGroup[0].type === block.type
-        ) {
-            currentGroup.push(block);
-        } else {
-            groups.push(currentGroup);
-            currentGroup = [block];
-        }
-    });
-    if (currentGroup.length) {
-        groups.push(currentGroup);
-    }
-    return groups;
-});
 
 const getBlockListIndex = (id: string) => {
     return blocks.value.findIndex(b => b.id === id);
-}
-
-const getWrapperComponent = (type: string) => {
-    switch (type) {
-        case "Numbered list":
-            return "ol";
-        case "Bulleted list":
-        case "Todo list":
-            return "ul";
-        default:
-            return "div";
-    }
 }
 
 const onInsertBlockAfter = (blockId: string, type: string) => {
@@ -95,6 +63,7 @@ const insertBlock = (type: string, beforeIndex: number) => {
 }
 
 const onDeleteBlock = (index: number) => {
+    console.log('onDeleteBlock', index);
     deleteBlockAtIndex(props.blockListId, index);
     if (index > 0) {
         const id = blocks.value[index - 1].id
@@ -151,7 +120,6 @@ const onFocusNext = (id: string) => {
         emit('focusNext');
     }
 }
-
 </script>
 
 <style scoped></style>

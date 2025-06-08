@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-3xl mx-auto">
+    <div id="editor" class="max-w-3xl mx-auto px-8 pb-28">
         <div class="min-h-28 flex flex-col justify-end">
             <button v-if="currentPage?.icon" @click="showEmojiPicker"
                 class="w-fit text-5xl leading-normal mt-24 hover:bg-stone-100 rounded aspect-square ">{{
@@ -23,12 +23,14 @@
                 </dialog>
             </div>
         </div>
-        <h1 class="text-4xl font-bold mb-4 px-[3px] py-[2px]" ref="pageTitleElement" placeholder="Page Title"
+        <h1 class="text-4xl font-bold mb-4 px-1 py-[2px]" ref="pageTitleElement" placeholder="Page Title"
             contenteditable="true" @input="saveTitle" @keydown.enter.prevent="onInsertFirstBlock">
             {{ pageTitle }}
         </h1>
-        <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPrevious="onFocusPageTitle">
-        </BlockList>
+        <div class="-translate-x-7">
+            <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPrevious="onFocusPageTitle">
+            </BlockList>
+        </div>
         <BlockMenu />
     </div>
 </template>
@@ -67,8 +69,8 @@ const blockList = ref();
 
 const onInsertFirstBlock = () => {
     if (currentPage.value?.blockListId) {
-        const blockId = insertBlockAtIndex(currentPage.value.blockListId, 'Text', 0);
-        nextTick(() => blockList.value.focusBlock(blockId));
+        insertBlockAtIndex(currentPage.value.blockListId, 'Text', 0);
+        nextTick(() => blockList.value.focusFirstBlock());
     }
 }
 
