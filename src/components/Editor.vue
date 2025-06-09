@@ -31,20 +31,21 @@
             <BlockList ref="blockList" :blockListId="currentPage!.blockListId" @focusPrevious="onFocusPageTitle">
             </BlockList>
         </div>
-        <BlockMenu />
+        <button class="h-8 w-full cursor-text" @click="onInsertBlockAtEnd">
+            <span class="sr-only">Insert new block</span>
+        </button>
     </div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, type Ref, ref } from 'vue';
-import BlockMenu from '@/components/BlockMenu.vue';
 import { useRepo } from '@/composables/useRepo';
 import BlockList from './BlockList.vue';
 import { FaceSmileIcon, PhotoIcon } from "@heroicons/vue/24/outline";
 import EmojiPicker from './EmojiPicker.vue';
 import { vOnClickOutside } from '@vueuse/components'
 
-const { currentPage, insertBlockAtIndex, setPageTitle, setPageIcon } = useRepo();
+const { currentPage, insertBlockAtIndex, insertBlockAtEnd, setPageTitle, setPageIcon } = useRepo();
 
 const pageTitle = ref(currentPage.value?.title);
 const pageTitleElement: Ref<HTMLElement | undefined> = ref();
@@ -71,6 +72,13 @@ const onInsertFirstBlock = () => {
     if (currentPage.value?.blockListId) {
         insertBlockAtIndex(currentPage.value.blockListId, 'Text', 0);
         nextTick(() => blockList.value.focusFirstBlock());
+    }
+}
+
+const onInsertBlockAtEnd = () => {
+    if (currentPage.value?.blockListId) {
+        insertBlockAtEnd(currentPage.value.blockListId, 'Text');
+        nextTick(() => blockList.value.focusLastBlock());
     }
 }
 

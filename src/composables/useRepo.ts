@@ -15,6 +15,7 @@ import TodoListBlock from "@/components/Blocks/TodoListBlock.vue";
 import BulletedListBlock from "@/components/Blocks/BulletedListBlock.vue";
 import NumberedListBlock from "@/components/Blocks/NumberedListBlock.vue";
 import CalloutBlock from "@/components/Blocks/CalloutBlock.vue";
+import PageBlock from "@/components/Blocks/PageBlock.vue";
 
 const repo = new Repo({
     network: [
@@ -163,6 +164,7 @@ const createPageInPage = (pageId: AutomergeUrl): AutomergeUrl => {
         throw new Error("parentPageHandle not set in createPageInPage");
     }
     const pageHandle = createEmptyPage();
+    console.log("Creating page in page", parentPageHandle.url);
     parentPageHandle.change(doc => {
         doc.childIds.push(pageHandle.url)
     })
@@ -225,6 +227,34 @@ const deletePage = (pageId: AutomergeUrl) => {
     }
 }
 
+const pageById = computed(() => (pageId: AutomergeUrl): AssembledPage | null => {
+    let page = currentWorkspace.value?.pages.find(page => page.id === pageId);
+
+    if (!page) {
+        for (const workspacePage of currentWorkspace.value?.pages || []) {
+            const found = findPageInChildren(pageId, workspacePage.children);
+            if (found) {
+                page = found;
+                break;
+            }
+        }
+    }
+    return page || null;
+});
+
+const findPageInChildren = (pageId: AutomergeUrl, children: AssembledPage[]): AssembledPage | null => {
+    for (const child of children) {
+        if (child.id === pageId) {
+            return child;
+        }
+        const found = findPageInChildren(pageId, child.children);
+        if (found) {
+            return found;
+        }
+    }
+    return null;
+}
+
 const setCurrentPage = (id: string) => {
     if (!isValidAutomergeUrl(id)) {
         throw new Error(`Invalid argument for setCurrentPage: ${id}`)
@@ -270,6 +300,9 @@ const getComponent = (type: string) => {
             break;
         case 'Callout':
             component = CalloutBlock;
+            break;
+        case 'Page':
+            component = PageBlock;
             break;
         default:
             throw new Error("Unknown block type: " + type);
@@ -350,6 +383,10 @@ const insertBlockAtIndex = (blockListId: string, type: string, index: number): s
     return block.id
 }
 
+const insertBlockAtEnd = (blockListId: string, type: string): string => {
+    return insertBlockAtIndex(blockListId, type, currentPage.value!.blockLists[blockListId].blockIds.length);
+}
+
 const deleteBlockAtIndex = (blockListId: string, index: number) => {
     getCurrentPageHandle().change((doc) => {
         const blockList: BlockList = doc.blockLists[blockListId];
@@ -422,9 +459,15 @@ const createBlock = (type: string, existingId?: string): Block => {
             data = {
                 icon: '💡',
                 blockListId: blockList.id,
-                backgroundColor: 'oklch(97% 0.001 106.424)'
+                backgroundColor: 'gray',
             }
             insertBlockAtIndex(blockList.id, 'Text', 0);
+            break;
+        case 'Page':
+            const pageId = createPageInPage(currentPageId.value!);
+            data = {
+                pageId
+            }
             break;
         default:
             throw new Error("Unknown block type: " + type);
@@ -467,6 +510,10 @@ const setPageIcon = (icon: string) => {
     })
 }
 
+const getPageLink = (id: AutomergeUrl) => {
+    return `/workspaces/${currentWorkspaceId.value}/pages/${id}`;
+}
+
 export function useRepo() {
     return {
         createWorkspace,
@@ -479,15 +526,18 @@ export function useRepo() {
         createPageInWorkspace,
         createPageInPage,
         deletePage,
+        pageById,
         blocksByListId,
         blockById,
         updateBlockData,
         insertBlockAtIndex,
+        insertBlockAtEnd,
         deleteBlockAtIndex,
         replaceBlock,
         createAsset,
         setCoverImage,
         setPageTitle,
         setPageIcon,
+        getPageLink,
     }
 }

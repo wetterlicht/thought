@@ -3,7 +3,9 @@
         :blockId="id" :content="content" @updateContent="onUpdateContent"
         @insertBlockAfter="emit('insertBlockAfter', $event)" @replaceBlock="emit('replaceBlock', $event)"
         @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious')"
-        @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')">
+        @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')"
+        @openBlockMenu="($event) => emit('openBlockMenu', $event)">
+        {{ content }}
     </TextElement>
 </template>
 

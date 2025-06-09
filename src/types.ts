@@ -67,3 +67,11 @@ export interface Segment {
 export interface FocusableBlock {
     focusBlock(focusStart: boolean): void
 }
+
+export interface SelectionCallback {
+    (type: string): void;
+}
+
+export interface CloseCallback {
+    (): void;
+}

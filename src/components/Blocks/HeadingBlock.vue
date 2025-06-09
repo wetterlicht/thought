@@ -1,8 +1,9 @@
 <template>
     <TextElement :component="tag" :blockId="id" :content="content" ref="textElement" contenteditable
-        @updateContent="onUpdateContent" @insertBlockAfter="emit('insertBlockAfter', $event)"
-        @replaceBlock="emit('replaceBlock', $event)" @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock')"
-        @focusPrevious="emit('focusPrevious')" @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')">
+        @insertBlockAfter="emit('insertBlockAfter', $event)" @replaceBlock="emit('replaceBlock', $event)"
+        @newBlock="emit('newBlock')" @focusBlock="emit('focusBlock')" @focusPrevious="emit('focusPrevious')"
+        @focusNext="emit('focusNext')" @deleteBlock="emit('deleteBlock')"
+        @openBlockMenu="($event) => emit('openBlockMenu', $event)">
     </TextElement>
 </template>
 

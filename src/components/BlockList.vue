@@ -1,16 +1,19 @@
 <template>
     <div class="blocks grid gap-y-2">
         <Block v-for="(block, index) in blocks" :ref="(el) => {
-            if (!blockRefs.value) {
-                blockRefs.value = {};
+            if (!blockRefs) {
+                blockRefs = {};
             }
             if (el) {
-                blockRefs.value[block.id] = el;
+                blockRefs[block.id] = el as unknown as FocusableBlock;
             } else {
-                delete blockRefs.value[block.id];
+                delete blockRefs[block.id];
             }
-        }" :block="block" :key="block.id" :data-block-id="block.id" @delete-block="onDeleteBlock(index)"
-            class="relative flex gap-1">
+        }" :block="block" :key="block.id" :data-block-id="block.id" @deleteBlock="onDeleteBlock(index)"
+            @insertBlockAfter="(type) => onInsertBlockAfter(block.id, type)"
+            @replaceBlock="(type) => onReplaceBlock(block.id, type)" @newBlock="onNewBlock(index)"
+            @focusBlock="focusBlock(block.id, true)" @focusPrevious="onFocusPrevious(block.id)"
+            @focusNext="onFocusNext(block.id)" class="relative flex gap-1">
         </Block>
     </div>
 </template>
@@ -20,8 +23,10 @@ import { useRepo } from '@/composables/useRepo';
 import type { FocusableBlock } from '@/types';
 import { computed, nextTick, ref, type Ref } from 'vue';
 import Block from './Block.vue';
+import router from '@/router';
+import type { AutomergeUrl } from '@automerge/automerge-repo';
 
-const { replaceBlock, deleteBlockAtIndex, insertBlockAtIndex, blocksByListId } = useRepo();
+const { replaceBlock, deleteBlockAtIndex, insertBlockAtIndex, getPageLink, blocksByListId, blockById } = useRepo();
 const props = defineProps({
     blockListId: {
         type: String,
@@ -29,7 +34,7 @@ const props = defineProps({
     },
 });
 const emit = defineEmits(['empty', 'focusPrevious', 'focusNext']);
-const blockRefs = ref<Record<string, FocusableBlock>>({});
+const blockRefs: Ref<Record<string, FocusableBlock>> = ref({});
 const blocks = computed(() => blocksByListId.value(props.blockListId));
 
 const getBlockListIndex = (id: string) => {
@@ -37,14 +42,13 @@ const getBlockListIndex = (id: string) => {
 }
 
 const onInsertBlockAfter = (blockId: string, type: string) => {
-    insertBlock(type, getBlockListIndex(blockId));
+    const newBlockId = insertBlock(type, getBlockListIndex(blockId));
+    handleNewBlock(newBlockId, type);
 }
 
 const onReplaceBlock = (blockId: string, type: string) => {
     const newBlockId = replaceBlock(props.blockListId, blockId, type);
-    nextTick(() => {
-        focusBlock(newBlockId, true);
-    });
+    handleNewBlock(newBlockId, type);
 }
 
 const onNewBlock = (beforeIndex: number) => {
@@ -52,18 +56,26 @@ const onNewBlock = (beforeIndex: number) => {
     const type = ['Numbered list', 'Bulleted list', 'Todo list'].includes(beforeBlock.type)
         ? beforeBlock.type
         : "Text";
-    insertBlock(type, beforeIndex);
+    const newBlockId = insertBlock(type, beforeIndex);
+    handleNewBlock(newBlockId, type);
 }
 
-const insertBlock = (type: string, beforeIndex: number) => {
-    const blockId = insertBlockAtIndex(props.blockListId, type, beforeIndex + 1);
-    nextTick(() => {
-        focusBlock(blockId, true)
-    })
+const insertBlock = (type: string, beforeIndex: number): string => {
+    return insertBlockAtIndex(props.blockListId, type, beforeIndex + 1);
+}
+
+const handleNewBlock = (blockId: string, type: string) => {
+    if (type === 'Page') {
+        const block = blockById.value(blockId);
+        router.push(getPageLink(block.data.pageId as AutomergeUrl));
+    } else {
+        nextTick(() => {
+            focusBlock(blockId, true)
+        })
+    }
 }
 
 const onDeleteBlock = (index: number) => {
-    console.log('onDeleteBlock', index);
     deleteBlockAtIndex(props.blockListId, index);
     if (index > 0) {
         const id = blocks.value[index - 1].id

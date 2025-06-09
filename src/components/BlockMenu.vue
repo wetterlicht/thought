@@ -1,45 +1,137 @@
 <template>
-    <div class="block-menu" v-if="menuOpen" @keydown="onKeydown" v-on-click-outside="closeMenu">
-        <input ref="input" v-model="menuQuery" type="text" placeholder="Search blocks..."
-            class="w-full px-2 py-1 mb-2 border border-stone-300 rounded-md" />
-        <div v-for="section in filteredSections" class="block-menu__section">
-            <div class="block-menu__section-title">{{ section.name }}</div>
-            <ul>
-                <li v-for="block in section.blocks" :data-block-name="block.name"
-                    :class="{ active: selectedBlock.name === block.name }">
-                    <button @click="confirmSelection">{{
-                        block.name }}</button>
-                </li>
-            </ul>
+    <div class="block-menu" @keydown="onKeydown" v-on-click-outside="() => emit('close')" :class="{
+        '-translate-y-full': showAbove,
+        'top-0': !showAbove,
+    }">
+        <div class="overflow-y-auto max-h-[min(500px_40vh)]">
+            <input ref="input" v-model="menuQuery" type="text" placeholder="Search blocks..."
+                class="w-full px-2 py-1 mb-2 border border-stone-300 rounded-md" />
+            <div v-for="section in filteredSections" class="block-menu__section">
+                <div class="block-menu__section-title">{{ section.name }}</div>
+                <ul>
+                    <li v-for="block in section.blocks" :data-block-name="block.name"
+                        :class="{ active: selectedBlock.name === block.name }">
+                        <button @click="onBlockClicked(block.name)">{{
+                            block.name }}</button>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue';
-import { useBlockMenu } from '../composables/useBlockMenu';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { vOnClickOutside } from '@vueuse/components'
 
-const { menuQuery, menuOpen, selectedBlock, filteredSections, closeMenu, moveSelection, confirmSelection } = useBlockMenu();
+const emit = defineEmits(['confirmSelection', 'close']);
 
-const input = ref<HTMLInputElement | null>(null);
+const input = ref();
+const showAbove = ref(false);
+const menuQuery = ref('');
+const selectionIndex = ref(0);
 
-watch(menuOpen, (newMenuOpen) => {
-    if (newMenuOpen) {
-        nextTick(() => {
-            if (input.value) {
-                input.value.focus();
-            }
-        });
+onMounted(() => {
+    // Show the menu above the block if in the lower half of the screen
+    const rect = input.value.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.bottom > viewportHeight / 2) {
+        showAbove.value = true;
+    } else {
+        showAbove.value = false;
     }
+    nextTick(() => {
+        if (input.value) {
+            input.value.focus();
+        }
+    });
 });
 
-const onKeydown = (event: KeyboardEvent) => {
-    if (!menuOpen.value) {
-        return;
+const sections = [
+    {
+        name: "Basic blocks",
+        blocks: [
+            {
+                name: "Text"
+            },
+            {
+                name: "Heading 1"
+            },
+            {
+                name: "Heading 2"
+            },
+            {
+                name: "Heading 3"
+            },
+            {
+                name: "Image"
+            },
+            {
+                name: "Bulleted list"
+            },
+            {
+                name: "Numbered list"
+            },
+            {
+                name: "Todo list"
+            },
+            {
+                name: "Callout"
+            },
+            {
+                name: 'Page'
+            }
+        ]
+    },
+];
+
+
+
+function moveSelection(direction: 1 | -1) {
+    selectionIndex.value = (selectionIndex.value + direction + filteredBlocks.value.length) % filteredBlocks.value.length
+}
+
+function confirmSelection() {
+    if (filteredBlocks.value.length > 0) {
+        const type = filteredBlocks.value[selectionIndex.value]?.name;
+        if (!type) {
+            return;
+        }
+        emit('confirmSelection', type);
     }
+}
+
+const filteredSections = computed(() => {
+    const result: { name: string, blocks: { name: string }[] }[] = [];
+    sections.forEach(section => {
+        const blocks = section.blocks.filter(block => {
+            const filter = menuQuery.value.toLowerCase();
+            return block.name.toLowerCase().includes(filter);
+        })
+        if (blocks.length > 0) {
+            result.push({
+                ...section,
+                blocks
+            })
+        }
+    })
+    return result;
+})
+
+const filteredBlocks = computed(() => {
+    return filteredSections.value.reduce((acc, cur) => {
+        acc.push(...cur.blocks);
+        return acc;
+    }, [] as { name: string }[]);
+})
+
+const selectedBlock = computed(() => {
+    return filteredBlocks.value[selectionIndex.value]
+})
+
+const onKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-        closeMenu();
+        emit('close');
     } else if (event.key === 'Enter') {
         event.preventDefault();
         confirmSelection();
@@ -51,6 +143,10 @@ const onKeydown = (event: KeyboardEvent) => {
         event.preventDefault();
         moveSelection(-1)
     }
+}
+
+const onBlockClicked = (blockName: string) => {
+    emit('confirmSelection', blockName);
 }
 
 watch(selectedBlock, (newSelectedBlock) => {
@@ -98,15 +194,16 @@ function getScrollableParent(element: HTMLElement) {
 
 <style scoped>
 .block-menu {
+    position: absolute;
     border: 1px solid #ccc;
-    border-radius: 1rem;
+    border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     width: 20rem;
     max-width: calc(100% - 2rem);
-    max-height: min(500px, 40vh);
     padding-inline: 0.5rem;
     padding-block: 0.5rem;
-    overflow: auto;
+    z-index: 10;
+    background-color: white;
 
     .block-menu__section:not(:last-child) {
         margin-bottom: 1rem;
@@ -138,7 +235,6 @@ function getScrollableParent(element: HTMLElement) {
             background-color: white;
             border: none;
             width: 100%;
-            cursor: pointer;
             text-align: left;
             border-radius: 4px;
             padding: 0.25rem 0.5rem;

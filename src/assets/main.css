@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source inline("bg-gray-100");
+@source inline("border-gray-100");
+@source inline("text-gray-600");
 @source inline("bg-red-100");
 @source inline("border-red-100");
 @source inline("text-red-600");

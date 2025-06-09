@@ -6,7 +6,6 @@
 </template>
 
 <script setup lang="ts">
-import { useBlockMenu } from '@/composables/useBlockMenu';
 import { nextTick, ref, type Ref } from 'vue';
 
 const props = defineProps({
@@ -24,8 +23,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['insertBlockAfter', 'replaceBlock', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent']);
-const openMenu = useBlockMenu().openMenu;
+const emit = defineEmits(['insertBlockAfter', 'replaceBlock', 'newBlock', 'focusBlock', 'focusPrevious', 'focusNext', 'deleteBlock', 'updateContent', 'openBlockMenu']);
 
 const editable: Ref<HTMLElement | null> = ref(null)
 
@@ -48,18 +46,18 @@ const onKeydown = (event: KeyboardEvent) => {
         }
     } else if (event.ctrlKey && event.key === 'i') {
         event.preventDefault();
-
-        openMenu((type) => {
-            if (isEmpty()) {
-                emit('replaceBlock', type);
-            } else {
-                emit('insertBlockAfter', type);
-
+        emit('openBlockMenu', {
+            selectionCallback: (type: string) => {
+                if (isEmpty()) {
+                    emit('replaceBlock', type);
+                } else {
+                    emit('insertBlockAfter', type);
+                }
+            }, closeCallback: () => {
+                nextTick(() => {
+                    emit('focusBlock');
+                });
             }
-        }, () => {
-            nextTick(() => {
-                emit('focusBlock');
-            });
         });
     } else if (event.key === 'Backspace') {
         if (isEmpty()) {
